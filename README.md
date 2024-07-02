@@ -6,3 +6,4 @@
 2. Install dependencies
 3. Create an `.env` file based on the `.env.template`
 4. Make migration with Prisma `npx prisma migrate dev`
+5. Run `npm run start:dev` to start the microservice.
