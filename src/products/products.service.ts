@@ -1,14 +1,15 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   Logger,
-  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaClient } from '@prisma/client';
 import { PaginationDto } from 'src/common';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class ProductsService extends PrismaClient implements OnModuleInit {
@@ -32,9 +33,10 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
     const lastPage = Math.ceil(totalPages / limit);
 
     if (page > lastPage) {
-      throw new BadRequestException(
-        `Page ${page} out of bounds. Limit is ${lastPage} pages.`,
-      );
+      throw new RpcException({
+        message: `Page ${page} out of bounds. Limit is ${lastPage} pages.`,
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     return {
@@ -55,7 +57,11 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
     const product = await this.product.findUnique({
       where: { id, available: true },
     });
-    if (!product) throw new NotFoundException(`Product #${id} not found`);
+    if (!product)
+      throw new RpcException({
+        message: `Product #${id} not found`,
+        status: HttpStatus.BAD_REQUEST,
+      });
     return product;
   }
 

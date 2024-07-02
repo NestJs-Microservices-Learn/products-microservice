@@ -1,9 +1,14 @@
-import { Controller, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  ParseIntPipe,
+  BadRequestException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from 'src/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 
 @Controller('products')
 export class ProductsController {
@@ -16,7 +21,7 @@ export class ProductsController {
   }
 
   // @Get()
-  @MessagePattern({ cmd: 'find_al_products' })
+  @MessagePattern({ cmd: 'find_all_products' })
   findAll(@Payload() paginationDto: PaginationDto) {
     return this.productsService.findAll(paginationDto);
   }
@@ -35,7 +40,10 @@ export class ProductsController {
     @Payload() updateProductDto: UpdateProductDto,
   ) {
     if (Object.keys(updateProductDto).length === 0)
-      throw new BadRequestException('No data provided');
+      throw new RpcException({
+        message: 'No data provided',
+        status: HttpStatus.BAD_REQUEST,
+      });
     return this.productsService.update(updateProductDto);
   }
 
